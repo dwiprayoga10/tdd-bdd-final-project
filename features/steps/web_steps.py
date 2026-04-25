@@ -61,13 +61,14 @@ def step_impl(context, element_name, text_string):
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
-    element.select_by_visible_text(text)
+    fixed_text = text.capitalize()
+    element.select_by_visible_text(fixed_text)
 
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
-    assert(element.first_selected_option.text == text)
+    assert(element.first_selected_option.text.upper() == text.upper())
 
 @then('the "{element_name}" field should be empty')
 def step_impl(context, element_name):
@@ -104,7 +105,50 @@ def step_impl(context, element_name):
 # to get the element id of any button
 ##################################################################
 
-## UPDATE CODE HERE ##
+##################################################################
+# BUTTON HANDLING
+##################################################################
+@when('I press the "{button}" button')
+def step_impl(context, button):
+    """Press a button by its name"""
+    button_id = button.lower() + "-btn"
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, button_id))
+    )
+    element.click()
+
+
+##################################################################
+# MESSAGE CHECK
+##################################################################
+@then('I should see the message "{message}"')
+def step_impl(context, message):
+    """Check flash message"""
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, "flash_message"))
+    )
+    assert message in element.text
+
+
+##################################################################
+# RESULTS TABLE CHECK
+##################################################################
+@then('I should see "{text}" in the results')
+def step_impl(context, text):
+    """Check results table contains text"""
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, "search_results"))
+    )
+    assert text in element.text
+
+
+@then('I should not see "{text}" in the results')
+def step_impl(context, text):
+    """Check results table does NOT contain text"""
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, "search_results"))
+    )
+    assert text not in element.text
 
 ##################################################################
 # This code works because of the following naming convention:
